@@ -30,6 +30,32 @@ terraform init
 terraform apply
 ```
 
+Ok now you have a couple of nice output variables, one is the ip address of the machine
+
+```PowerShell
+$ipAddress = terraform output -json ip_address | ConvertFrom-json
+# you can output ip address
+$ipAddress.ip_address
+
+# Now you can dump private key of the machine into a file.
+terraform output -raw tls_private_key >> machine.key
+
+# Now change permission to key file or ssh cannot use it
+
+# remove inheritance
+Icacls machine.key /c /t /Inheritance:d
+
+# Add current user as owner
+$currentUser = whoami
+Icacls machine.key /c /t /Grant "$currentUser`:F"
+
+# Remove other standard users
+Icacls machine.key /c /t /Remove Administrator "Authenticated Users" BUILTIN\Administrators BUILTIN Everyone System Users
+
+# Finally connect in ssh
+ssh "azureuser@$($ipAddress.ip_address)" -i .\machine.key
+```
+
 Clean up when you're done:
 
 ```
