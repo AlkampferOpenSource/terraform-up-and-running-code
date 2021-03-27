@@ -17,7 +17,7 @@ provider "azurerm" {
 
 # Create a resource group if it doesn't exist
 resource "azurerm_resource_group" "myterraformgroup" {
-    name     = "Terraform01"
+    name     = "Terraform1"
     location = "westeurope"
 
     tags = {
@@ -179,10 +179,29 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     boot_diagnostics {
         storage_account_uri = azurerm_storage_account.mystorageaccount.primary_blob_endpoint
     }
- 
-    custom_data = filebase64("./init.sh")
+
     tags = {
         environment = "Terraform Demo"
+    }
+
+    # custom_data = filebase64("./init.sh")
+
+    connection {
+        type        = "ssh"
+        host        = "azurerm_public_ip.myterraformpublicip.ip_address"
+        user        = "azureuser"
+        private_key = "tls_private_key.example_ssh.private_key_pem"
+    }
+
+    provisioner "file" {
+        source      = "init.sh"
+        destination = "/tmp"
+    }
+
+    provisioner "remote-exec" {
+        inline = [
+        "sudo bash /tmp/init.sh",
+        ]
     }
 }
 
@@ -194,3 +213,5 @@ data "azurerm_public_ip" "myterraformpublicip" {
 output "ip_address" { 
     value = data.azurerm_public_ip.myterraformpublicip
 }
+
+
