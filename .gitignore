@@ -1,4 +1,5 @@
 *.tfstate
 *.tfstate.backup
-.terraform
+.terraform**
 *.iml
+code/terraformAzure/00-preface/hello-world/.terraform.lock.hcl
