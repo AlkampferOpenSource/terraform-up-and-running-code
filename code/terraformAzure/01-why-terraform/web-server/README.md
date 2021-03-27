@@ -38,7 +38,7 @@ $ipAddress = terraform output -json ip_address | ConvertFrom-json
 $ipAddress.ip_address
 
 # Now you can dump private key of the machine into a file.
-terraform output -raw tls_private_key >> machine.key
+terraform output -raw tls_private_key > machine.key
 
 # Now change permission to key file or ssh cannot use it
 

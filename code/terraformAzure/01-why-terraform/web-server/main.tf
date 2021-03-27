@@ -179,16 +179,18 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     boot_diagnostics {
         storage_account_uri = azurerm_storage_account.mystorageaccount.primary_blob_endpoint
     }
-
+ 
+    custom_data = filebase64("./init.sh")
     tags = {
         environment = "Terraform Demo"
     }
 }
 
+data "azurerm_public_ip" "myterraformpublicip" {
+  name                = azurerm_public_ip.myterraformpublicip.name
+  resource_group_name = azurerm_linux_virtual_machine.myterraformvm.resource_group_name
+}
+
 output "ip_address" { 
-    depends_on = [
-      azurerm_linux_virtual_machine.myterraformvm,
-      azurerm_public_ip.myterraformpublicip 
-    ]
-    value = azurerm_public_ip.myterraformpublicip 
+    value = data.azurerm_public_ip.myterraformpublicip
 }
