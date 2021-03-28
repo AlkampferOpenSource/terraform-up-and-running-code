@@ -5,13 +5,13 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      version = "~>2.0"
+
     }
   }
 }
 
 provider "azurerm" {
-  version = "~>2.0"
+
   features {}
 }
 
@@ -139,12 +139,13 @@ resource "azurerm_storage_account" "mystorageaccount" {
     }
 }
 
-# Create (and display) an SSH key
-resource "tls_private_key" "example_ssh" {
-  algorithm = "RSA"
-  rsa_bits = 4096
-}
-output "tls_private_key" { value = tls_private_key.example_ssh.private_key_pem }
+# # Create (and display) an SSH key
+# resource "tls_private_key" "example_ssh" {
+#   algorithm = "RSA"
+#   rsa_bits = 4096
+# }
+
+# output "tls_private_key" { value = tls_private_key.example_ssh.private_key_pem }
 
 # Create virtual machine
 resource "azurerm_linux_virtual_machine" "myterraformvm" {
@@ -173,7 +174,8 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
 
     admin_ssh_key {
         username       = "azureuser"
-        public_key     = tls_private_key.example_ssh.public_key_openssh
+        # public_key     = tls_private_key.example_ssh.public_key_openssh
+        public_key     = file("private_key.pub")
     }
 
     boot_diagnostics {
@@ -184,7 +186,25 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
         environment = "Terraform Demo"
     }
 
-    custom_data = filebase64("./init.sh")
+    # custom_data = filebase64("./init.sh")
+
+    connection {
+        type        = "ssh"
+        host        = "azurerm_public_ip.myterraformpublicip.ip_address"
+        user        = "azureuser"
+        private_key = file("private_key")
+    }
+
+    provisioner "file" {
+        source      = "init.sh"
+        destination = "/tmp"
+    }
+
+    provisioner "remote-exec" {
+        inline = [
+        "sudo bash /tmp/init.sh",
+        ]
+    }
 }
 
 data "azurerm_public_ip" "myterraformpublicip" {

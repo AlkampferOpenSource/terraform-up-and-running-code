@@ -3,3 +3,4 @@
 .terraform**
 *.iml
 code/terraformAzure/00-preface/hello-world/.terraform.lock.hcl
+**/private_key**
