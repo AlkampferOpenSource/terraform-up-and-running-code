@@ -187,24 +187,6 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     }
 
     # custom_data = filebase64("./init.sh")
-
-    connection {
-        type        = "ssh"
-        host        = "azurerm_public_ip.myterraformpublicip.ip_address"
-        user        = "azureuser"
-        private_key = file("private_key")
-    }
-
-    provisioner "file" {
-        source      = "init.sh"
-        destination = "/tmp"
-    }
-
-    provisioner "remote-exec" {
-        inline = [
-        "sudo bash /tmp/init.sh",
-        ]
-    }
 }
 
 data "azurerm_public_ip" "myterraformpublicip" {
@@ -214,6 +196,26 @@ data "azurerm_public_ip" "myterraformpublicip" {
 
 output "ip_address" { 
     value = data.azurerm_public_ip.myterraformpublicip
+}
+
+resource "null_resource" "vm_provision" {
+    connection {
+        type        = "ssh"
+        host        = data.azurerm_public_ip.myterraformpublicip.ip_address
+        user        = "azureuser"
+        private_key = file("private_key")
+    }
+
+    provisioner "file" {
+        source      = "init.sh"
+        destination = "/tmp/init.sh"
+    }
+
+    provisioner "remote-exec" {
+        inline = [
+            "sudo bash /tmp/init.sh",
+        ]
+    }
 }
 
 
