@@ -27,45 +27,31 @@ Deploy the code:
 
 ```
 # First generate a private / public RSA key pair to access the virtual machine
-# called private_key
- ssh-keygen.exe -b 4096 
+
+# This is the sample cose with the output, **leave password blank and call the key .\my-key** 
+ssh-keygen.exe -b 4096 
 Generating public/private rsa key pair.
-Enter file in which to save the key (C:\Users\alkam/.ssh/id_rsa): .\private_key
+Enter file in which to save the key (C:\Users\alkam/.ssh/id_rsa): .\my-key
 Enter passphrase (empty for no passphrase): 
 Enter same passphrase again: 
-Your identification has been saved in .\private_key.
-Your public key has been saved in .\private_key.pub.
+Your identification has been saved in .\my-key.
+Your public key has been saved in .\my-key.pub.
 
 # Now you can perform init with terraform
 terraform init
-terraform apply
+terraform plan -out testplan
+terraform apply testplan
 ```
 
-Ok now you have a couple of nice output variables, one is the ip address of the machine
+If you need to retrieve data for public IP you can use this code.
 
 ```PowerShell
 $ipAddress = terraform output -json ip_address | ConvertFrom-json
 # you can output ip address
 $ipAddress.ip_address
 
-# Now you can dump private key of the machine into a file.
-# This is not needed anymore because private key was generated 
-# out of terraform.
-# terraform output -raw tls_private_key > machine.key
-
-# Now change permission to key file or ssh cannot use it
-# remove inheritance
-Icacls private_key /c /t /Inheritance:d
-
-# Add current user as owner
-$currentUser = whoami
-Icacls private_key /c /t /Grant "$currentUser`:F"
-
-# Remove other standard users
-Icacls private_key /c /t /Remove Administrator "Authenticated Users" BUILTIN\Administrators BUILTIN Everyone System Users
-
-# Finally connect in ssh
-ssh "azureuser@$($ipAddress.ip_address)" -i .\private_key
+# If you want to use SSH in windows to connect to the machine 
+ssh "azureuser@$($ipAddress.ip_address)" -i .\my-key
 ```
 
 Clean up when you're done:
@@ -73,3 +59,5 @@ Clean up when you're done:
 ```
 terraform destroy
 ```
+
+Gian Maria
